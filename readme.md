@@ -1,49 +1,85 @@
-## Security Operations Dashboard // Special Birthday
+<div align="center">
 
-O Sentinel-29 é um dashboard de monitoramento de rede em tempo real desenvolvido como prova de conceito (PoC) para segurança cibernética. O sistema realiza varreduras ativas e análise de tráfego para identificação de portas abertas e possíveis vulnerabilidades. 
+# 🛡️ Sentinel-29: Security Operations Dashboard
+### Active Network Monitoring & Threat Detection System
 
-## Funcionalidades
-Monitoramento de Rede: Scan de portas críticas utilizando a técnica TCP SYN com a biblioteca Scapy.
+![Version](https://img.shields.io/badge/Version-1.1.0_Stable-blue?style=flat&logo=semver)
+![Status](https://img.shields.io/badge/Status-Operational-success?style=flat&logo=statuspage)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 
-Dashboard em Tempo Real: Interface web dinâmica para visualização de tráfego e métricas de ameaças.
+<br>
 
-Persistência de Dados: Histórico de eventos e auditoria armazenado em banco de dados SQLite.
+<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+<img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" />
+<img src="https://img.shields.io/badge/Scapy-Packet_Analysis-blue?style=for-the-badge&logo=python&logoColor=white" />
+<img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" />
+<img src="https://img.shields.io/badge/Windows_Batch-0078D6?style=for-the-badge&logo=windows&logoColor=white" />
 
-Geração de Relatórios: Exportação automática de logs de incidentes para formato PDF.
+</div>
 
-## Tecnologias
-Linguagem: Python 3.13 (Flask, Scapy, ReportLab).
+---
 
-Banco de Dados: SQLite3.
+## 📋 Sobre o Projeto
 
-Frontend: Tailwind CSS, jQuery (AJAX).
+O **Sentinel-29** é uma plataforma de **SOC (Security Operations Center)** desenvolvida para monitoramento ativo de redes e detecção de vulnerabilidades.
 
-Automação: Windows Batch Scripting.
+Focado em **Blue Team Operations**, o sistema simula a rotina de um analista de segurança, automatizando a varredura de portas (SYN Scan), identificação de serviços críticos e auditoria de segurança.
 
-### Instalação e Uso ##
+---
 
-pip install -r requirements.txt
+## 🚀 Novas Funcionalidades (v1.1)
 
-Instalar dependências:
+* **🧠 Smart Auto-Discovery:** O sistema agora detecta automaticamente a interface de rede ativa (Wi-Fi ou Ethernet) e calcula o range de IP da rede. **Zero configuração manual necessária.**
+* **⚡ Auto-Healing Launcher:** O script de inicialização (`scanner.bat`) possui inteligência para:
+    * Verificar e exigir privilégios de Administrador.
+    * Detectar ausência de bibliotecas (Flask/Scapy).
+    * Instalar dependências automaticamente via `requirements.txt` se necessário.
+* **🕵️ Active Stealth Scanning:** Utiliza pacotes TCP SYN modificados para identificar portas abertas sem completar o handshake (técnica *Half-open*).
+* **📄 Relatórios Executivos:** Geração automática de relatórios de incidente em PDF.
 
-## ⚙️ Instalação Rápida
+---
 
-1. **Clone o repositório:**
-   ```bash
-   git clone [https://github.com/ols29/Security-Operations-Dashboard.git](https://github.com/ols29/Security-Operations-Dashboard.git)
+## ⚙️ Instalação e Execução
 
-2. **Instalar Dependências**   pip install -r requirements.txt
+### 1. Pré-requisito Obrigatório (Windows)
+O motor de scan (Scapy) exige um driver de captura de pacotes.
+* Baixe o **[Npcap](https://npcap.com/#download)**.
+* ⚠️ **IMPORTANTE:** Durante a instalação, marque a opção: **"Install Npcap in WinPcap API-compatible Mode"**.
 
-3. **Executar**  scanner.bat
+### 2. Como Rodar (Modo Automático)
+Basta clicar com o botão direito no arquivo **`scanner.bat`** e selecionar:
+> **"Executar como Administrador"**
 
-Bash
-pip install flask scapy reportlab
-Executar o sistema (Como Administrador):
+O script irá:
+1.  Verificar seu ambiente Python.
+2.  Instalar as dependências automaticamente (se faltarem).
+3.  Detectar sua rede.
+4.  Abrir o Dashboard no navegador.
 
-Bash
-python app.py
-Acessar o Painel: http://localhost:2929
+### 3. Acesso
+O painel estará disponível em:
+👉 **http://localhost:2929**
 
-## Autor
-Oliver Santos (ols29)
-Estudante de Eng.Software (PUCPR)
+---
+
+## 🛠️ Solução de Problemas
+
+| Erro Comum | Solução |
+| :--- | :--- |
+| **"Permissão Negada" / Scan falhou** | Você esqueceu de rodar o `scanner.bat` como **Administrador**. O Scapy precisa de acesso raw socket à placa de rede. |
+| **WARNING: No libpcap provider** | O **Npcap** não está instalado ou a opção "WinPcap Mode" não foi marcada. Reinstale o Npcap. |
+| **Erro de Interface (IP não encontrado)** | O Auto-Discovery falhou? Você pode forçar a interface editando o `red29_monitor.py` manualmente (mas é raro acontecer). |
+
+---
+
+## 👨‍💻 Autor
+
+<div align="center">
+
+**Oliver 'ols29' Casto**
+<br>
+*Analista de TI - JR| Eng.Software Student @ PUCPR*
+
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ols29)
+
+</div>
