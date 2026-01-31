@@ -1,57 +1,100 @@
 import scapy.all as scapy
 import datetime
+import socket
+
+scapy.conf.verb = 0
 
 class Red29Monitor:
-    def __init__(self, target_ip):
-        self.target_ip = target_ip
-        self.critical_ports = [21, 22, 23, 25, 53, 80, 110, 443, 3389]
+    def __init__(self, target_ip=None, interface=None):
+        # Se não passar nada, ele detecta sozinho
+        self.interface, self.target_ip = self.auto_discover(interface, target_ip)
+        
+        self.critical_ports = [21, 22, 23, 25, 53, 80, 110, 443, 3389, 8080]
         self.found_vulnerabilities = 0
 
-    def scan_network(self):
-        print(f"--- Iniciando Scan Red-29 em: {self.target_ip} ---")
-        
-        arp_request = scapy.ARP(pdst=self.target_ip)
-        broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
-        arp_request_broadcast = broadcast/arp_request
-        answered_list = scapy.srp(arp_request_broadcast, timeout=1, verbose=False)[0]
+    def auto_discover(self, iface_manual, ip_manual):
+        """Detecta automaticamente a interface de saída e a faixa de IP"""
+        try:
+            route = scapy.conf.route.route("8.8.8.8")
+            
+            final_iface = iface_manual if iface_manual else route[3]
+            
 
-        print(f"Dispositivos encontrados: {len(answered_list)}")
-        return answered_list
+            if not ip_manual:
+                my_ip = route[1]
+                base_ip = ".".join(my_ip.split('.')[:3]) + ".0/24"
+                final_ip = base_ip
+            else:
+                final_ip = ip_manual
+
+            print(f"\n[*] Configuração Automática Detectada:")
+            print(f"    > Interface: {final_iface.name if hasattr(final_iface, 'name') else final_iface}")
+            print(f"    > IP Local: {route[1]}")
+            print(f"    > Alvo do Scan: {final_ip}")
+            
+            return final_iface, final_ip
+            
+        except Exception as e:
+            print(f"[!] Erro na auto-detecção: {e}")
+            return scapy.conf.iface, "192.168.0.1/24"
+
+    def scan_network(self):
+        print(f"\n--- Iniciando Scan Sentinel-29 ---")
+        
+        try:
+            arp_request = scapy.ARP(pdst=self.target_ip)
+            broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+            packet = broadcast/arp_request
+            
+            
+            answered = scapy.srp(packet, timeout=2, verbose=False, iface=self.interface)[0]
+
+            print(f"[+] Dispositivos ativos encontrados: {len(answered)}")
+            return answered
+            
+        except Exception as e:
+            print(f"[ERROR] Falha crítica no Scan: {e}")
+            print("Dica: Verifique se o Npcap está instalado em modo 'WinPcap compatible'.")
+            return []
 
     def port_check(self, ip):
-        """Verifica se portas críticas estão abertas no alvo"""
-        print(f"Verificando vulnerabilidades no IP: {ip}")
+        print(f"[*] Verificando vulnerabilidades no IP: {ip}")
         for port in self.critical_ports:
-           
-            syn_packet = scapy.IP(dst=ip)/scapy.TCP(dport=port, flags="S")
-            response = scapy.sr1(syn_packet, timeout=0.5, verbose=False)
-            
-            if response and response.haslayer(scapy.TCP) and response.getlayer(scapy.TCP).flags == 0x12:
-                print(f"[ALERTA] Porta {port} ABERTA em {ip}. Risco detectado.")
-                self.found_vulnerabilities += 1
+            try:
                 
-                scapy.sr(scapy.IP(dst=ip)/scapy.TCP(dport=port, flags="R"), timeout=1, verbose=False)
+                syn_packet = scapy.IP(dst=ip)/scapy.TCP(dport=port, flags="S")
+                resp = scapy.sr1(syn_packet, timeout=0.5, verbose=False, iface=self.interface)
+                
+                if resp:
+                    
+                    if resp.haslayer(scapy.TCP) and resp.getlayer(scapy.TCP).flags == 0x12:
+                        print(f"   [ALERTA 🚨] Porta {port} ABERTA em {ip}")
+                        self.found_vulnerabilities += 1
+                        
+                        
+                        scapy.send(scapy.IP(dst=ip)/scapy.TCP(dport=port, flags="R"), verbose=False, iface=self.interface)
+            except:
+                pass
 
     def generate_birthday_report(self):
-        """Gera o log final com a temática de 29"""
         now = datetime.datetime.now()
-        print("\n" + "="*30)
-        print(f"RELATÓRIO DE ANIVERSÁRIO - DIA 29")
-        print(f"Status: Monitoramento Ativo")
-        print(f"Data/Hora: {now.strftime('%d/%m/%Y %H:%M:%S')}")
-        print(f"Total de falhas potenciais analisadas: 29") 
-        print(f"Ameaças reais bloqueadas: {self.found_vulnerabilities}")
-        print("="*30)
+        print("\n" + "="*40)
+        print(f"🛡️  RELATÓRIO SENTINEL-29")
+        print(f"Data: {now.strftime('%d/%m/%Y %H:%M:%S')}")
+        print(f"Ameaças Detectadas: {self.found_vulnerabilities}")
+        print("="*40)
 
 if __name__ == "__main__":
-   
-    monitor = Red29Monitor("192.168.1.1/24")
+
+    monitor = Red29Monitor()
     
- 
     devices = monitor.scan_network()
-    
     
     if devices:
         target = devices[0][1].psrc
+        print(f"\n[TESTE] Iniciando Port Scan no alvo: {target}")
         monitor.port_check(target)
+    else:
+        print("\n[!] Nenhum dispositivo encontrado na rede.")
+
     monitor.generate_birthday_report()

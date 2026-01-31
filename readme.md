@@ -21,7 +21,20 @@ Frontend: Tailwind CSS, jQuery (AJAX).
 Automação: Windows Batch Scripting.
 
 ### Instalação e Uso ##
+
+pip install -r requirements.txt
+
 Instalar dependências:
+
+## ⚙️ Instalação Rápida
+
+1. **Clone o repositório:**
+   ```bash
+   git clone [https://github.com/ols29/Security-Operations-Dashboard.git](https://github.com/ols29/Security-Operations-Dashboard.git)
+
+2. **Instalar Dependências**   pip install -r requirements.txt
+
+3. **Executar**  scanner.bat
 
 Bash
 pip install flask scapy reportlab
